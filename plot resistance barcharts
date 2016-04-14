@@ -1,0 +1,33 @@
+international_piece = read.csv(file = "~/Dropbox//isolates_gnb_filtered.csv", stringsAsFactors = F, nrow = 209)
+
+binaryMatrix<-function(m){
+  bm<-as.matrix(m)
+  b<-replace(bm, bm =="-", 0.0)
+  b<-replace(b, bm!="-", 1.0)
+  b<-replace(b, bm=="?", 0.0)
+  storage.mode(b)<-'integer'
+  rownames(b)<-rownames(m)
+  b
+}
+
+international_piece_1 = select(international_piece, -Sample)
+
+international_piece_binary = binaryMatrix(international_piece_1)
+Colsum_international = as.data.frame(colSums(international_piece_binary))
+colnames(Colsum_international) = "frequency"
+gene_summary = mutate(Colsum_international, percentage = frequency/209*100)
+col_names = row.names(Colsum_international)
+rownames(gene_summary) = col_names
+
+#export to excel, split antibiotic class to "Class"
+write.table(gene_summary, "~/Dropbox/gene_summary.csv")
+
+gene_summary = read.csv(file = "~/Dropbox//gene_summary.csv", stringsAsFactors = F)
+
+
+
+q = ggplot(data=gene_summary, aes(reorder(gene,Sequence), y=percentage, fill=Class)) + geom_bar(stat="identity") 
+percentage_plot = q + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(NULL)
+
+p = ggplot(data=gene_summary, aes(reorder(gene,Sequence), y=frequency, fill=Class)) + geom_bar(stat="identity") 
+frequency_plot = p + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(NULL)
